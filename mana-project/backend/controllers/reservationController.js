@@ -8,15 +8,6 @@ import {
   verificarDisponibilidad,
 } from "../logica/reservationService.js";
 
-import { ReservationBuilder } from "../logica/ReservationBuilder.js";
-
-/**
- * Controlador de reservaciones.
- * Capa de Presentación - Solo maneja HTTP request/response.
- * Delega la lógica de negocio al servicio correspondiente.
- */
-
-// Obtener todas las reservaciones
 export const getReservations = async (req, res) => {
   try {
     const reservations = await obtenerReservaciones();
@@ -27,7 +18,6 @@ export const getReservations = async (req, res) => {
   }
 };
 
-// Obtener una reservación por ID
 export const getReservation = async (req, res) => {
   try {
     const reservation = await obtenerReservacion(req.params.id);
@@ -41,7 +31,6 @@ export const getReservation = async (req, res) => {
   }
 };
 
-// Obtener reservaciones del usuario autenticado
 export const getUserReservations = async (req, res) => {
   try {
     const reservations = await obtenerReservacionesUsuario(req.usuario?.id);
@@ -55,22 +44,29 @@ export const getUserReservations = async (req, res) => {
   }
 };
 
-// Crear una nueva reservación
 export const createReservation = async (req, res) => {
   try {
-    const reservationData = new ReservationBuilder()
-      .setClienteId(req.usuario?.id)
-      .setNombre(req.body.nombre)
-      .setTelefono(req.body.telefono)
-      .setEmail(req.body.email)
-      .setPersonas(req.body.personas)
-      .setFecha(req.body.fecha)
-      .setHora(req.body.hora)
-      .setTipoReserva(req.body.tiporeserva ?? req.body.tipoReserva)
-      .build();
+    const reservationData = {
+      clienteId: req.usuario?.id,
+      nombre: req.body.nombre,
+      telefono: req.body.telefono,
+      email: req.body.email,
+      personas: req.body.personas,
+      fecha: req.body.fecha,
+      hora: req.body.hora,
+      tipoReserva: req.body.tiporeserva ?? req.body.tipoReserva,
+      decoracion: req.body.decoracion,
+      pastel: req.body.pastel,
+      edadHomenajeado: req.body.edadHomenajeado,
+      empresa: req.body.empresa,
+      requiereProyector: req.body.requiereProyector,
+      requiereWifi: req.body.requiereWifi,
+      musica: req.body.musica,
+      zonaPrivada: req.body.zonaPrivada,
+      observaciones: req.body.observaciones,
+    };
 
     const reservation = await crearReservacion(reservationData);
-
     res.status(201).json(reservation);
   } catch (error) {
     if (error.statusCode) {
@@ -83,7 +79,6 @@ export const createReservation = async (req, res) => {
   }
 };
 
-// Actualizar estado de reservación
 export const updateReservationStatus = async (req, res) => {
   try {
     const result = await actualizarEstadoReservacion(req.params.id, req.body.estado);
@@ -97,7 +92,6 @@ export const updateReservationStatus = async (req, res) => {
   }
 };
 
-// Eliminar reservación
 export const deleteReservation = async (req, res) => {
   try {
     await eliminarReservacion(req.params.id);
@@ -111,7 +105,6 @@ export const deleteReservation = async (req, res) => {
   }
 };
 
-// Verificar disponibilidad de horarios para una fecha
 export const checkAvailability = async (req, res) => {
   try {
     const result = await verificarDisponibilidad(req.query.fecha);
