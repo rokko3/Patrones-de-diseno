@@ -67,22 +67,32 @@ export const obtenerReservacionesUsuario = async (clienteId) => {
  * horario válido y disponibilidad (2h entre reservas).
  * @throws Error si falla alguna validación
  */
-export const crearReservacion = async (clienteId, nombre, telefono, email, personas, fecha, hora, tiporeserva) => {
+export const crearReservacion = async (reservationData) => {
+  const {
+    clienteId,
+    nombre,
+    telefono,
+    email,
+    personas,
+    fecha,
+    hora,
+    tipoReserva,
+  } = reservationData;
+
   if (!clienteId) {
     const error = new Error("Debes iniciar sesión para hacer una reserva");
     error.statusCode = 401;
     throw error;
   }
 
-  // Validar campos requeridos
-  if (!nombre || !telefono || !email || !personas || !fecha || !hora || !tiporeserva) {
+  if (!nombre || !telefono || !email || !personas || !fecha || !hora || !tipoReserva) {
     const error = new Error("Todos los campos son requeridos");
     error.statusCode = 400;
     throw error;
   }
 
   const tipoReservaNormalizado = TIPOS_RESERVA_VALIDOS.find(
-    (tipo) => tipo.toLowerCase() === String(tiporeserva).toLowerCase().trim()
+    (tipo) => tipo.toLowerCase() === String(tipoReserva).toLowerCase().trim()
   );
 
   if (!tipoReservaNormalizado) {
@@ -91,17 +101,19 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
     throw error;
   }
 
-  // Validar rango de personas
   if (personas < 1 || personas > 35) {
     const error = new Error("El número de personas debe ser entre 1 y 35");
     error.statusCode = 400;
     throw error;
   }
 
-  // Validar hora (7:30 AM - 7:00 PM)
-  const horaNum = parseInt(hora.split(":")[0]);
-  const minutos = parseInt(hora.split(":")[1]);
+  const [horaTexto, minutosTexto] = String(hora).split(":");
+  const horaNum = parseInt(horaTexto, 10);
+  const minutos = parseInt(minutosTexto, 10);
+
   if (
+    Number.isNaN(horaNum) ||
+    Number.isNaN(minutos) ||
     horaNum < 7 ||
     horaNum > 19 ||
     (horaNum === 7 && minutos < 30) ||
@@ -112,7 +124,6 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
     throw error;
   }
 
-  // Verificar disponibilidad de horario (2 horas entre reservas)
   const existingReservations = await findActiveReservationsByFecha(fecha);
   const nuevaHoraMinutos = horaNum * 60 + minutos;
 
@@ -130,9 +141,15 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
     }
   }
 
-  // Insertar reservación
   const result = await insertReservation(
-    clienteId, nombre, telefono, email, personas, fecha, hora, tipoReservaNormalizado
+    clienteId,
+    nombre,
+    telefono,
+    email,
+    personas,
+    fecha,
+    hora,
+    tipoReservaNormalizado
   );
 
   return {

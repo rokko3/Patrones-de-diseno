@@ -8,6 +8,8 @@ import {
   verificarDisponibilidad,
 } from "../logica/reservationService.js";
 
+import { ReservationBuilder } from "../logica/ReservationBuilder.js";
+
 /**
  * Controlador de reservaciones.
  * Capa de Presentación - Solo maneja HTTP request/response.
@@ -56,13 +58,18 @@ export const getUserReservations = async (req, res) => {
 // Crear una nueva reservación
 export const createReservation = async (req, res) => {
   try {
-    const { nombre, telefono, email, personas, fecha, hora, tiporeserva, tipoReserva } = req.body;
-    const clienteId = req.usuario?.id;
-    const tipoReservaValue = tiporeserva ?? tipoReserva;
+    const reservationData = new ReservationBuilder()
+      .setClienteId(req.usuario?.id)
+      .setNombre(req.body.nombre)
+      .setTelefono(req.body.telefono)
+      .setEmail(req.body.email)
+      .setPersonas(req.body.personas)
+      .setFecha(req.body.fecha)
+      .setHora(req.body.hora)
+      .setTipoReserva(req.body.tiporeserva ?? req.body.tipoReserva)
+      .build();
 
-    const reservation = await crearReservacion(
-      clienteId, nombre, telefono, email, personas, fecha, hora, tipoReservaValue
-    );
+    const reservation = await crearReservacion(reservationData);
 
     res.status(201).json(reservation);
   } catch (error) {
