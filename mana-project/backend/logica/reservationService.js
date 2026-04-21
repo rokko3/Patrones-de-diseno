@@ -4,15 +4,12 @@ import {
   findReservationsByClienteId,
   findActiveReservationsByFecha,
   insertReservation,
+  insertReservationDetail,
   updateReservationStatusById,
   deleteReservationById,
 } from "../datos/reservationRepository.js";
 
-/**
- * Servicio de reservaciones.
- * Capa de Lógica de Negocio - Contiene las reglas de negocio,
- * validaciones y orquestación. No conoce HTTP (req/res).
- */
+import { ReservationDirector } from "./builders/ReservationDirector.js";
 
 const ESTADOS_VALIDOS = ["PENDIENTE", "CONFIRMADA", "CANCELADA", "COMPLETADA"];
 const TIPOS_RESERVA_VALIDOS = ["Reunion Familiar", "Cumpleaños", "Negocios", "Fiesta"];
@@ -24,17 +21,10 @@ const HORARIOS_BASE = [
   "18:00", "18:30", "19:00",
 ];
 
-/**
- * Obtiene todas las reservaciones (admin).
- */
 export const obtenerReservaciones = async () => {
   return await findAllReservations();
 };
 
-/**
- * Obtiene una reservación por ID.
- * @throws Error si no existe
- */
 export const obtenerReservacion = async (id) => {
   const rows = await findReservationById(id);
 
@@ -47,10 +37,6 @@ export const obtenerReservacion = async (id) => {
   return rows[0];
 };
 
-/**
- * Obtiene las reservaciones de un cliente específico.
- * @throws Error si no hay clienteId
- */
 export const obtenerReservacionesUsuario = async (clienteId) => {
   if (!clienteId) {
     const error = new Error("Usuario no autenticado");
@@ -61,12 +47,6 @@ export const obtenerReservacionesUsuario = async (clienteId) => {
   return await findReservationsByClienteId(clienteId);
 };
 
-/**
- * Crea una nueva reservación.
- * Aplica reglas de negocio: validación de campos, rango de personas,
- * horario válido y disponibilidad (2h entre reservas).
- * @throws Error si falla alguna validación
- */
 export const crearReservacion = async (reservationData) => {
   const {
     clienteId,
@@ -141,35 +121,40 @@ export const crearReservacion = async (reservationData) => {
     }
   }
 
+  const director = new ReservationDirector();
+  const producto = director.construct({
+    ...reservationData,
+    tipoReserva: tipoReservaNormalizado,
+  });
+
   const result = await insertReservation(
-    clienteId,
-    nombre,
-    telefono,
-    email,
-    personas,
-    fecha,
-    hora,
-    tipoReservaNormalizado
+    producto.reserva.clienteId,
+    producto.reserva.nombre,
+    producto.reserva.telefono,
+    producto.reserva.email,
+    producto.reserva.personas,
+    producto.reserva.fecha,
+    producto.reserva.hora,
+    producto.reserva.tipoReserva
   );
+
+  await insertReservationDetail(result.insertId, producto.detalle);
 
   return {
     id: result.insertId,
-    cliente_id: clienteId,
-    nombre,
-    telefono,
-    email,
-    personas,
-    fecha,
-    hora,
-    estado: "PENDIENTE",
-    tiporeserva: tipoReservaNormalizado,
+    cliente_id: producto.reserva.clienteId,
+    nombre: producto.reserva.nombre,
+    telefono: producto.reserva.telefono,
+    email: producto.reserva.email,
+    personas: producto.reserva.personas,
+    fecha: producto.reserva.fecha,
+    hora: producto.reserva.hora,
+    estado: producto.reserva.estado,
+    tiporeserva: producto.reserva.tipoReserva,
+    detalle: producto.detalle,
   };
 };
 
-/**
- * Actualiza el estado de una reservación.
- * @throws Error si el estado no es válido o la reservación no existe
- */
 export const actualizarEstadoReservacion = async (id, estado) => {
   if (!ESTADOS_VALIDOS.includes(estado)) {
     const error = new Error("Estado no válido");
@@ -188,10 +173,6 @@ export const actualizarEstadoReservacion = async (id, estado) => {
   return { estado };
 };
 
-/**
- * Elimina una reservación por ID.
- * @throws Error si la reservación no existe
- */
 export const eliminarReservacion = async (id) => {
   const result = await deleteReservationById(id);
 
@@ -202,10 +183,6 @@ export const eliminarReservacion = async (id) => {
   }
 };
 
-/**
- * Verifica disponibilidad de horarios para una fecha.
- * @throws Error si no se proporciona fecha
- */
 export const verificarDisponibilidad = async (fecha) => {
   if (!fecha) {
     const error = new Error("La fecha es requerida");
