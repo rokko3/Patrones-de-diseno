@@ -56,11 +56,12 @@ export const getUserReservations = async (req, res) => {
 // Crear una nueva reservación
 export const createReservation = async (req, res) => {
   try {
-    const { nombre, telefono, email, personas, fecha, hora } = req.body;
+    const { nombre, telefono, email, personas, fecha, hora, tiporeserva, tipoReserva } = req.body;
     const clienteId = req.usuario?.id;
+    const tipoReservaValue = tiporeserva ?? tipoReserva;
 
     const reservation = await crearReservacion(
-      clienteId, nombre, telefono, email, personas, fecha, hora
+      clienteId, nombre, telefono, email, personas, fecha, hora, tipoReservaValue
     );
 
     res.status(201).json(reservation);

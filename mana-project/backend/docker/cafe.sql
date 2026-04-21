@@ -78,6 +78,7 @@ CREATE TABLE `reservas` (
   `personas` int NOT NULL,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
+  `tiporeserva` enum('Reunion Familiar','Cumpleaños','Negocios','Fiesta') NOT NULL,
   `estado` enum('PENDIENTE','CONFIRMADA','CANCELADA','COMPLETADA') DEFAULT 'PENDIENTE',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

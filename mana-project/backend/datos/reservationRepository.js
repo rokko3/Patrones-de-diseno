@@ -33,11 +33,11 @@ export const findActiveReservationsByFecha = async (fecha) => {
   return rows;
 };
 
-export const insertReservation = async (clienteId, nombre, telefono, email, personas, fecha, hora) => {
+export const insertReservation = async (clienteId, nombre, telefono, email, personas, fecha, hora, tiporeserva) => {
   const [result] = await db.query(
-    `INSERT INTO reservas (cliente_id, nombre, telefono, email, personas, fecha, hora, estado)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
-    [clienteId, nombre, telefono, email, personas, fecha, hora]
+    `INSERT INTO reservas (cliente_id, nombre, telefono, email, personas, fecha, hora, tiporeserva, estado)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
+    [clienteId, nombre, telefono, email, personas, fecha, hora, tiporeserva]
   );
   return result;
 };

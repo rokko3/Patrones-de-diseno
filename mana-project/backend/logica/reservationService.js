@@ -15,6 +15,7 @@ import {
  */
 
 const ESTADOS_VALIDOS = ["PENDIENTE", "CONFIRMADA", "CANCELADA", "COMPLETADA"];
+const TIPOS_RESERVA_VALIDOS = ["Reunion Familiar", "Cumpleaños", "Negocios", "Fiesta"];
 
 const HORARIOS_BASE = [
   "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -66,7 +67,7 @@ export const obtenerReservacionesUsuario = async (clienteId) => {
  * horario válido y disponibilidad (2h entre reservas).
  * @throws Error si falla alguna validación
  */
-export const crearReservacion = async (clienteId, nombre, telefono, email, personas, fecha, hora) => {
+export const crearReservacion = async (clienteId, nombre, telefono, email, personas, fecha, hora, tiporeserva) => {
   if (!clienteId) {
     const error = new Error("Debes iniciar sesión para hacer una reserva");
     error.statusCode = 401;
@@ -74,8 +75,18 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
   }
 
   // Validar campos requeridos
-  if (!nombre || !telefono || !email || !personas || !fecha || !hora) {
+  if (!nombre || !telefono || !email || !personas || !fecha || !hora || !tiporeserva) {
     const error = new Error("Todos los campos son requeridos");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const tipoReservaNormalizado = TIPOS_RESERVA_VALIDOS.find(
+    (tipo) => tipo.toLowerCase() === String(tiporeserva).toLowerCase().trim()
+  );
+
+  if (!tipoReservaNormalizado) {
+    const error = new Error("Tipo de reserva no válido");
     error.statusCode = 400;
     throw error;
   }
@@ -121,7 +132,7 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
 
   // Insertar reservación
   const result = await insertReservation(
-    clienteId, nombre, telefono, email, personas, fecha, hora
+    clienteId, nombre, telefono, email, personas, fecha, hora, tipoReservaNormalizado
   );
 
   return {
@@ -134,6 +145,7 @@ export const crearReservacion = async (clienteId, nombre, telefono, email, perso
     fecha,
     hora,
     estado: "PENDIENTE",
+    tiporeserva: tipoReservaNormalizado,
   };
 };
 

@@ -23,7 +23,7 @@ function Reservations() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
+  const [tipoReserva, setTipoReserva] = useState("");
   const MAX_PERSONAS = 35;
   const MIN_PERSONAS = 1;
 
@@ -34,6 +34,7 @@ function Reservations() {
     "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
     "18:00", "18:30", "19:00"
   ];
+  const tiposReserva = ["Reunion Familiar", "Cumpleaños", "Negocios", "Fiesta"];
 
   // Verificar autenticación al cargar (silenciosamente)
   useEffect(() => {
@@ -140,12 +141,12 @@ function Reservations() {
   };
 
   const canProceedStep1 = nombre && telefono && email && validatePhone(telefono) && validateEmail(email);
-  const canProceedStep2 = fecha && hora;
+  const canProceedStep2 = fecha && hora && tipoReserva;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!fecha || !hora || !nombre || !telefono || !email) {
+    if (!fecha || !hora || !tipoReserva || !nombre || !telefono || !email) {
       return;
     }
 
@@ -163,7 +164,8 @@ function Reservations() {
       email,
       personas,
       fecha,
-      hora
+      hora,
+      tipoReserva
     };
 
     try {
@@ -194,6 +196,7 @@ function Reservations() {
     setPersonas(1);
     setFecha("");
     setHora("");
+    setTipoReserva("");
     if (userData) {
       setNombre(`${userData.nombre || ''} ${userData.apellido || ''}`.trim());
       setTelefono(userData.telefono || '');
@@ -417,6 +420,7 @@ function Reservations() {
                 <div className="w-12 h-12 bg-[#F0EBE0] rounded-xl flex items-center justify-center">
                   <Calendar className="text-[#8B7355]" size={24} />
                 </div>
+                
                 <div>
                   <h2 className="text-2xl font-bold text-[#4A4036]">Fecha y Hora</h2>
                   <p className="text-[#6B5D4D] text-sm">Elige cuándo quieres visitarnos</p>
@@ -434,7 +438,24 @@ function Reservations() {
                     className="w-full px-4 py-4 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] transition-all text-lg bg-[#FAF9F6]"
                   />
                 </div>
-
+                <div className="space-y-6">
+                  <label className="block text-sm font-medium text-[#4A4036] mb-3">Selecciona el tipo de reserva</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {tiposReserva.map((tipo) => (
+                      <button
+                        key={tipo}
+                        type="button"
+                        onClick={() => setTipoReserva(tipo)}
+                        className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${tipoReserva === tipo
+                          ? 'bg-[#8B7355] text-white shadow-lg scale-105'
+                          : 'bg-[#F0EBE0] text-[#6B5D4D] hover:bg-[#E8E4D9]'
+                          }`}
+                      >
+                        {tipo}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-[#4A4036] mb-3">
                     <Clock size={16} />
@@ -535,6 +556,10 @@ function Reservations() {
                   <div className="flex justify-between">
                     <span className="text-[#6B5D4D]">Hora:</span>
                     <span className="font-medium text-[#4A4036]">{hora ? formatHora(hora) : '-'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B5D4D]">Tipo de reserva:</span>
+                    <span className="font-medium text-[#4A4036]">{tipoReserva || '-'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#6B5D4D]">Personas:</span>
