@@ -41,8 +41,8 @@ function Register() {
     }
     const telefono = (formData.telefono || "").trim();
     const telefonoDigits = telefono.replace(/\D/g, "");
-    if (telefonoDigits.length < 10) {
-      setError("El teléfono debe tener al menos 10 dígitos");
+    if (telefonoDigits.length !== 10) {
+      setError("El teléfono debe tener exactamente 10 dígitos");
       return;
     }
     if (!/^\d+$/.test(telefonoDigits)) {
@@ -73,7 +73,7 @@ function Register() {
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
       alert("Registro exitoso");
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Error al registrarse:", error);
       setError(
@@ -234,6 +234,7 @@ function Register() {
           <div>
             <button
               type="submit"
+             
               disabled={loading}
               // AJUSTE BOTÓN: bg-[#8B7355] hover-[#6F5B43]
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-[#8B7355] hover:bg-[#6F5B43] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B7355] disabled:bg-[#E8E4D9] disabled:text-[#9A8C7D] disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
