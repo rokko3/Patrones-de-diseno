@@ -5,11 +5,17 @@ export class ReservationBuilder {
       nombre: "",
       telefono: "",
       email: "",
-      personas: 1,
+      personas: null,
       fecha: "",
       hora: "",
       tipoReserva: "",
     };
+  }
+
+  static badRequest(message) {
+    const error = new Error(message);
+    error.statusCode = 400;
+    return error;
   }
 
   setClienteId(value) {
@@ -18,37 +24,37 @@ export class ReservationBuilder {
   }
 
   setNombre(value) {
-    this.reservation.nombre = value;
+    this.reservation.nombre = String(value ?? "").trim();
     return this;
   }
 
   setTelefono(value) {
-    this.reservation.telefono = value;
+    this.reservation.telefono = String(value ?? "").trim();
     return this;
   }
 
   setEmail(value) {
-    this.reservation.email = value;
+    this.reservation.email = String(value ?? "").trim();
     return this;
   }
 
   setPersonas(value) {
-    this.reservation.personas = value;
+    this.reservation.personas = Number(value);
     return this;
   }
 
   setFecha(value) {
-    this.reservation.fecha = value;
+    this.reservation.fecha = String(value ?? "").trim();
     return this;
   }
 
   setHora(value) {
-    this.reservation.hora = value;
+    this.reservation.hora = String(value ?? "").trim();
     return this;
   }
 
   setTipoReserva(value) {
-    this.reservation.tipoReserva = value;
+    this.reservation.tipoReserva = String(value ?? "").trim();
     return this;
   }
 
@@ -64,14 +70,31 @@ export class ReservationBuilder {
       tipoReserva,
     } = this.reservation;
 
-    if (!clienteId) throw new Error("clienteId es obligatorio");
-    if (!nombre) throw new Error("nombre es obligatorio");
-    if (!telefono) throw new Error("telefono es obligatorio");
-    if (!email) throw new Error("email es obligatorio");
-    if (!personas) throw new Error("personas es obligatorio");
-    if (!fecha) throw new Error("fecha es obligatoria");
-    if (!hora) throw new Error("hora es obligatoria");
-    if (!tipoReserva) throw new Error("tipoReserva es obligatorio");
+    if (!clienteId) {
+      const error = new Error("Debes iniciar sesión para hacer una reserva");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const requiredFields = [
+      ["nombre", nombre],
+      ["telefono", telefono],
+      ["email", email],
+      ["personas", personas],
+      ["fecha", fecha],
+      ["hora", hora],
+      ["tipoReserva", tipoReserva],
+    ];
+
+    for (const [field, value] of requiredFields) {
+      if (value === "" || value === null || value === undefined) {
+        throw ReservationBuilder.badRequest(`${field} es obligatorio`);
+      }
+    }
+
+    if (!Number.isInteger(personas) || personas <= 0) {
+      throw ReservationBuilder.badRequest("personas debe ser un número entero positivo");
+    }
 
     return {
       clienteId,

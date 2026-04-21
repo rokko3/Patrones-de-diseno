@@ -68,6 +68,12 @@ export const obtenerReservacionesUsuario = async (clienteId) => {
  * @throws Error si falla alguna validación
  */
 export const crearReservacion = async (reservationData) => {
+  if (!reservationData || typeof reservationData !== "object") {
+    const error = new Error("Datos de reservación inválidos");
+    error.statusCode = 400;
+    throw error;
+  }
+
   const {
     clienteId,
     nombre,
@@ -79,17 +85,7 @@ export const crearReservacion = async (reservationData) => {
     tipoReserva,
   } = reservationData;
 
-  if (!clienteId) {
-    const error = new Error("Debes iniciar sesión para hacer una reserva");
-    error.statusCode = 401;
-    throw error;
-  }
-
-  if (!nombre || !telefono || !email || !personas || !fecha || !hora || !tipoReserva) {
-    const error = new Error("Todos los campos son requeridos");
-    error.statusCode = 400;
-    throw error;
-  }
+  
 
   const tipoReservaNormalizado = TIPOS_RESERVA_VALIDOS.find(
     (tipo) => tipo.toLowerCase() === String(tipoReserva).toLowerCase().trim()
