@@ -7,19 +7,65 @@ import db from "../config/db.js";
 
 export const findAllReservations = async () => {
   const [rows] = await db.query(
-    "SELECT * FROM reservas ORDER BY fecha DESC, hora DESC"
+    `SELECT
+      r.*,
+      d.tipo_reserva,
+      d.decoracion,
+      d.pastel,
+      d.edad_homenajeado,
+      d.empresa,
+      d.requiere_proyector,
+      d.requiere_wifi,
+      d.musica,
+      d.zona_privada,
+      d.observaciones
+     FROM reservas r
+     LEFT JOIN detalle_reserva d ON d.reserva_id = r.id
+     ORDER BY r.fecha DESC, r.hora DESC`
   );
   return rows;
 };
 
 export const findReservationById = async (id) => {
-  const [rows] = await db.query("SELECT * FROM reservas WHERE id = ?", [id]);
+  const [rows] = await db.query(
+    `SELECT
+      r.*,
+      d.tipo_reserva,
+      d.decoracion,
+      d.pastel,
+      d.edad_homenajeado,
+      d.empresa,
+      d.requiere_proyector,
+      d.requiere_wifi,
+      d.musica,
+      d.zona_privada,
+      d.observaciones
+     FROM reservas r
+     LEFT JOIN detalle_reserva d ON d.reserva_id = r.id
+     WHERE r.id = ?`,
+    [id]
+  );
   return rows;
 };
 
 export const findReservationsByClienteId = async (clienteId) => {
   const [rows] = await db.query(
-    "SELECT * FROM reservas WHERE cliente_id = ? ORDER BY fecha DESC, hora DESC",
+    `SELECT
+      r.*,
+      d.tipo_reserva,
+      d.decoracion,
+      d.pastel,
+      d.edad_homenajeado,
+      d.empresa,
+      d.requiere_proyector,
+      d.requiere_wifi,
+      d.musica,
+      d.zona_privada,
+      d.observaciones
+     FROM reservas r
+     LEFT JOIN detalle_reserva d ON d.reserva_id = r.id
+     WHERE r.cliente_id = ?
+     ORDER BY r.fecha DESC, r.hora DESC`,
     [clienteId]
   );
   return rows;

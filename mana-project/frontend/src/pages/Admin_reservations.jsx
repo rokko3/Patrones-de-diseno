@@ -165,6 +165,49 @@ function AdminReservations() {
     completadas: reservations.filter(r => r.estado === "COMPLETADA").length
   };
 
+  const getDetailFields = (reservation) => {
+    const tipo = reservation.tipo_reserva;
+    if (!tipo) return [];
+
+    if (tipo === "Cumpleaños") {
+      return [
+        { label: "Tipo", value: tipo },
+        { label: "Decoración", value: reservation.decoracion },
+        { label: "Pastel", value: reservation.pastel },
+        { label: "Edad homenajeado", value: reservation.edad_homenajeado },
+      ];
+    }
+
+    if (tipo === "Negocios") {
+      return [
+        { label: "Tipo", value: tipo },
+        { label: "Empresa", value: reservation.empresa },
+        { label: "Proyector", value: reservation.requiere_proyector ? "Sí" : "No" },
+        { label: "WiFi", value: reservation.requiere_wifi ? "Sí" : "No" },
+        { label: "Zona privada", value: reservation.zona_privada ? "Sí" : "No" },
+      ];
+    }
+
+    if (tipo === "Fiesta") {
+      return [
+        { label: "Tipo", value: tipo },
+        { label: "Música", value: reservation.musica },
+        { label: "Decoración", value: reservation.decoracion },
+        { label: "Zona privada", value: reservation.zona_privada ? "Sí" : "No" },
+      ];
+    }
+
+    if (tipo === "Reunion Familiar") {
+      return [
+        { label: "Tipo", value: tipo },
+        { label: "Zona privada", value: reservation.zona_privada ? "Sí" : "No" },
+        { label: "Observaciones", value: reservation.observaciones },
+      ];
+    }
+
+    return [{ label: "Tipo", value: tipo }];
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -291,6 +334,21 @@ function AdminReservations() {
                       <Mail size={14} />
                       {reservation.email}
                     </div>
+
+                    {getDetailFields(reservation).length > 0 && (
+                      <div className="bg-amber-50/70 border border-amber-100 rounded-lg p-3">
+                        <p className="text-xs font-semibold text-amber-800 mb-2">Detalle de reserva</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                          {getDetailFields(reservation)
+                            .filter((item) => item.value !== null && item.value !== undefined && item.value !== "")
+                            .map((item) => (
+                              <div key={`${reservation.id}-${item.label}`} className="text-gray-700">
+                                <span className="font-semibold">{item.label}:</span> {item.value}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
