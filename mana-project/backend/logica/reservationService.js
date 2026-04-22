@@ -4,10 +4,10 @@ import {
   findReservationsByClienteId,
   findActiveReservationsByFecha,
   insertReservation,
-  insertReservationDetail,
   updateReservationStatusById,
   deleteReservationById,
 } from "../datos/reservationRepository.js";
+import { insertReservationDetail } from "../datos/detalleReservaRepository.js";
 
 import { ReservationDirector } from "./builders/ReservationDirector.js";
 
@@ -130,8 +130,7 @@ export const crearReservacion = async (reservationData) => {
     producto.reserva.email,
     producto.reserva.personas,
     producto.reserva.fecha,
-    producto.reserva.hora,
-    producto.reserva.tipoReserva
+    producto.reserva.hora
   );
 
   await insertReservationDetail(result.insertId, producto.detalle);
@@ -146,7 +145,6 @@ export const crearReservacion = async (reservationData) => {
     fecha: producto.reserva.fecha,
     hora: producto.reserva.hora,
     estado: producto.reserva.estado,
-    tiporeserva: producto.reserva.tipoReserva,
     detalle: producto.detalle,
   };
 };

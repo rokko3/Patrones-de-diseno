@@ -33,69 +33,13 @@ export const findActiveReservationsByFecha = async (fecha) => {
   return rows;
 };
 
-export const insertReservation = async (
-  clienteId,
-  nombre,
-  telefono,
-  email,
-  personas,
-  fecha,
-  hora,
-  tiporeserva
-) => {
+export const insertReservation = async (clienteId, nombre, telefono, email, personas, fecha, hora) => {
   const [result] = await db.query(
-    `INSERT INTO reservas
-     (cliente_id, nombre, telefono, email, personas, fecha, hora, tiporeserva, estado)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
-    [clienteId, nombre, telefono, email, personas, fecha, hora, tiporeserva]
+    `INSERT INTO reservas (cliente_id, nombre, telefono, email, personas, fecha, hora, estado)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')`,
+    [clienteId, nombre, telefono, email, personas, fecha, hora]
   );
   return result;
-};
-
-export const insertReservationDetail = async (reservaId, detalle) => {
-  const [result] = await db.query(
-    `INSERT INTO detalle_reserva
-     (reserva_id, tipo_reserva, decoracion, pastel, edad_homenajeado, empresa,
-      requiere_proyector, requiere_wifi, musica, zona_privada, observaciones)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      reservaId,
-      detalle.tipoReserva,
-      detalle.decoracion,
-      detalle.pastel,
-      detalle.edadHomenajeado,
-      detalle.empresa,
-      detalle.requiereProyector,
-      detalle.requiereWifi,
-      detalle.musica,
-      detalle.zonaPrivada,
-      detalle.observaciones,
-    ]
-  );
-  return result;
-};
-
-export const findReservationWithDetailById = async (id) => {
-  const [rows] = await db.query(
-    `SELECT 
-      r.*,
-      d.id AS detalle_id,
-      d.tipo_reserva,
-      d.decoracion,
-      d.pastel,
-      d.edad_homenajeado,
-      d.empresa,
-      d.requiere_proyector,
-      d.requiere_wifi,
-      d.musica,
-      d.zona_privada,
-      d.observaciones
-     FROM reservas r
-     LEFT JOIN detalle_reserva d ON d.reserva_id = r.id
-     WHERE r.id = ?`,
-    [id]
-  );
-  return rows;
 };
 
 export const updateReservationStatusById = async (id, estado) => {

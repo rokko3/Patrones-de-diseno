@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Minus, Plus, Calendar, Clock, Users, User, Phone, Mail, CalendarDays, CheckCircle, Loader2, LogIn, X } from "lucide-react";
+import { Minus, Plus, Calendar, Clock, Users, User, Phone, Mail, CalendarDays, CheckCircle, LogIn, X } from "lucide-react";
 
 const API_URL = "/api";
 
@@ -24,6 +24,17 @@ function Reservations() {
   const [userData, setUserData] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [tipoReserva, setTipoReserva] = useState("");
+  const [detalleReserva, setDetalleReserva] = useState({
+    decoracion: "",
+    pastel: "",
+    edadHomenajeado: "",
+    empresa: "",
+    requiereProyector: false,
+    requiereWifi: false,
+    musica: "",
+    zonaPrivada: false,
+    observaciones: "",
+  });
   const MAX_PERSONAS = 35;
   const MIN_PERSONAS = 1;
 
@@ -143,6 +154,48 @@ function Reservations() {
   const canProceedStep1 = nombre && telefono && email && validatePhone(telefono) && validateEmail(email);
   const canProceedStep2 = fecha && hora && tipoReserva;
 
+  const handleDetalleChange = (field, value) => {
+    setDetalleReserva((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const getDetallePayload = () => {
+    if (tipoReserva === "Cumpleaños") {
+      return {
+        decoracion: detalleReserva.decoracion || null,
+        pastel: detalleReserva.pastel || null,
+        edadHomenajeado: detalleReserva.edadHomenajeado
+          ? Number(detalleReserva.edadHomenajeado)
+          : null,
+      };
+    }
+
+    if (tipoReserva === "Negocios") {
+      return {
+        empresa: detalleReserva.empresa || null,
+        requiereProyector: detalleReserva.requiereProyector ? 1 : 0,
+        requiereWifi: detalleReserva.requiereWifi ? 1 : 0,
+        zonaPrivada: detalleReserva.zonaPrivada ? 1 : 0,
+      };
+    }
+
+    if (tipoReserva === "Fiesta") {
+      return {
+        musica: detalleReserva.musica || null,
+        decoracion: detalleReserva.decoracion || null,
+        zonaPrivada: detalleReserva.zonaPrivada ? 1 : 0,
+      };
+    }
+
+    if (tipoReserva === "Reunion Familiar") {
+      return {
+        zonaPrivada: detalleReserva.zonaPrivada ? 1 : 0,
+        observaciones: detalleReserva.observaciones || null,
+      };
+    }
+
+    return {};
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -165,7 +218,8 @@ function Reservations() {
       personas,
       fecha,
       hora,
-      tipoReserva
+      tipoReserva,
+      ...getDetallePayload(),
     };
 
     try {
@@ -197,6 +251,17 @@ function Reservations() {
     setFecha("");
     setHora("");
     setTipoReserva("");
+    setDetalleReserva({
+      decoracion: "",
+      pastel: "",
+      edadHomenajeado: "",
+      empresa: "",
+      requiereProyector: false,
+      requiereWifi: false,
+      musica: "",
+      zonaPrivada: false,
+      observaciones: "",
+    });
     if (userData) {
       setNombre(`${userData.nombre || ''} ${userData.apellido || ''}`.trim());
       setTelefono(userData.telefono || '');
@@ -445,7 +510,20 @@ function Reservations() {
                       <button
                         key={tipo}
                         type="button"
-                        onClick={() => setTipoReserva(tipo)}
+                        onClick={() => {
+                          setTipoReserva(tipo);
+                          setDetalleReserva({
+                            decoracion: "",
+                            pastel: "",
+                            edadHomenajeado: "",
+                            empresa: "",
+                            requiereProyector: false,
+                            requiereWifi: false,
+                            musica: "",
+                            zonaPrivada: false,
+                            observaciones: "",
+                          });
+                        }}
                         className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${tipoReserva === tipo
                           ? 'bg-[#8B7355] text-white shadow-lg scale-105'
                           : 'bg-[#F0EBE0] text-[#6B5D4D] hover:bg-[#E8E4D9]'
@@ -456,6 +534,121 @@ function Reservations() {
                     ))}
                   </div>
                 </div>
+
+                {tipoReserva === "Cumpleaños" && (
+                  <div className="space-y-4 bg-[#FAF9F6] border border-[#E8E4D9] rounded-2xl p-5">
+                    <p className="text-sm font-semibold text-[#4A4036]">Detalles opcionales para cumpleaños</p>
+                    <input
+                      type="text"
+                      value={detalleReserva.pastel}
+                      onChange={(e) => handleDetalleChange("pastel", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Pastel (ej: chocolate, vainilla)"
+                    />
+                    <input
+                      type="text"
+                      value={detalleReserva.decoracion}
+                      onChange={(e) => handleDetalleChange("decoracion", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Decoración (ej: temática, globos)"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value={detalleReserva.edadHomenajeado}
+                      onChange={(e) => handleDetalleChange("edadHomenajeado", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Edad del homenajeado"
+                    />
+                  </div>
+                )}
+
+                {tipoReserva === "Negocios" && (
+                  <div className="space-y-4 bg-[#FAF9F6] border border-[#E8E4D9] rounded-2xl p-5">
+                    <p className="text-sm font-semibold text-[#4A4036]">Detalles opcionales para negocios</p>
+                    <input
+                      type="text"
+                      value={detalleReserva.empresa}
+                      onChange={(e) => handleDetalleChange("empresa", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Empresa"
+                    />
+                    <label className="flex items-center gap-3 text-[#4A4036]">
+                      <input
+                        type="checkbox"
+                        checked={detalleReserva.requiereProyector}
+                        onChange={(e) => handleDetalleChange("requiereProyector", e.target.checked)}
+                      />
+                      Requiere proyector
+                    </label>
+                    <label className="flex items-center gap-3 text-[#4A4036]">
+                      <input
+                        type="checkbox"
+                        checked={detalleReserva.requiereWifi}
+                        onChange={(e) => handleDetalleChange("requiereWifi", e.target.checked)}
+                      />
+                      Requiere WiFi
+                    </label>
+                    <label className="flex items-center gap-3 text-[#4A4036]">
+                      <input
+                        type="checkbox"
+                        checked={detalleReserva.zonaPrivada}
+                        onChange={(e) => handleDetalleChange("zonaPrivada", e.target.checked)}
+                      />
+                      Zona privada
+                    </label>
+                  </div>
+                )}
+
+                {tipoReserva === "Fiesta" && (
+                  <div className="space-y-4 bg-[#FAF9F6] border border-[#E8E4D9] rounded-2xl p-5">
+                    <p className="text-sm font-semibold text-[#4A4036]">Detalles opcionales para fiesta</p>
+                    <input
+                      type="text"
+                      value={detalleReserva.musica}
+                      onChange={(e) => handleDetalleChange("musica", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Música (ej: DJ, playlist, en vivo)"
+                    />
+                    <input
+                      type="text"
+                      value={detalleReserva.decoracion}
+                      onChange={(e) => handleDetalleChange("decoracion", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      placeholder="Decoración"
+                    />
+                    <label className="flex items-center gap-3 text-[#4A4036]">
+                      <input
+                        type="checkbox"
+                        checked={detalleReserva.zonaPrivada}
+                        onChange={(e) => handleDetalleChange("zonaPrivada", e.target.checked)}
+                      />
+                      Zona privada
+                    </label>
+                  </div>
+                )}
+
+                {tipoReserva === "Reunion Familiar" && (
+                  <div className="space-y-4 bg-[#FAF9F6] border border-[#E8E4D9] rounded-2xl p-5">
+                    <p className="text-sm font-semibold text-[#4A4036]">Detalles opcionales para reunión familiar</p>
+                    <label className="flex items-center gap-3 text-[#4A4036]">
+                      <input
+                        type="checkbox"
+                        checked={detalleReserva.zonaPrivada}
+                        onChange={(e) => handleDetalleChange("zonaPrivada", e.target.checked)}
+                      />
+                      Zona privada
+                    </label>
+                    <textarea
+                      value={detalleReserva.observaciones}
+                      onChange={(e) => handleDetalleChange("observaciones", e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-[#E8E4D9] rounded-xl focus:ring-2 focus:ring-[#8B7355] focus:border-[#8B7355] bg-white"
+                      rows={3}
+                      placeholder="Observaciones adicionales"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-[#4A4036] mb-3">
                     <Clock size={16} />
